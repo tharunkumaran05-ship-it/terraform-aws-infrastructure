@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
+        stage('Clone Repo') {
             steps {
-                git url: 'https://github.com/tharunkumaran05-ship-it/terraform-aws-infrastructure.git', branch: 'main'
+                git 'https://github.com/tharunkumaran05-ship-it/terraform-aws-infrastructure.git'
             }
         }
 
