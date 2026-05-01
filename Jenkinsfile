@@ -2,12 +2,6 @@ pipeline {
     agent any
 
     stages {
-        stage('Clone Repo') {
-            steps {
-                git 'https://github.com/tharunkumaran05-ship-it/terraform-aws-infrastructure.git'
-            }
-        }
-
         stage('Terraform Init') {
             steps {
                 sh 'terraform init'
