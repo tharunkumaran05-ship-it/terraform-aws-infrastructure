@@ -1,44 +1,57 @@
+provider "aws" {
+  region = "us-east-1"
+}
+
+# VPC
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
 }
 
+# Internet Gateway
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.main.id
+}
+
+# Subnet
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
 }
 
-resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.main.id
-}
-
+# Route Table
 resource "aws_route_table" "rt" {
   vpc_id = aws_vpc.main.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.igw.id
-  }
 }
 
+# Route
+resource "aws_route" "r" {
+  route_table_id         = aws_route_table.rt.id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.igw.id
+}
+
+# Route Table Association
 resource "aws_route_table_association" "assoc" {
   subnet_id      = aws_subnet.public.id
   route_table_id = aws_route_table.rt.id
 }
 
+# Security Group
 resource "aws_security_group" "sg" {
+  name   = "web-sg"
   vpc_id = aws_vpc.main.id
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.my_ip]
-  }
 
   ingress {
     from_port   = 80
     to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -51,27 +64,29 @@ resource "aws_security_group" "sg" {
   }
 }
 
+# EC2 Instance
 resource "aws_instance" "web" {
-  ami                    = "ami-020cba7c55df1f615"
-  instance_type          = "t3.micro"
-  subnet_id              = aws_subnet.public.id
+  ami           = "ami-0c02fb55956c7d316" # Amazon Linux (us-east-1 safe)
+  instance_type = "t2.micro"
+  subnet_id     = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.sg.id]
-  user_data              = file("user_data.sh")
+
   user_data = <<-EOF
   #!/bin/bash
-  sudo apt update -y
-  sudo apt install apache2 -y
-  sudo systemctl start apache2
-  sudo systemctl enable apache2
+  yum update -y
+  yum install httpd -y
+  systemctl start httpd
+  systemctl enable httpd
 
-  echo "<h1>Deployed via Terraform + GitHub Actions 🚀</h1>" | sudo tee /var/www/html/index.html
+  echo "<h1>Deployed via Terraform + GitHub Actions 🚀</h1>" > /var/www/html/index.html
   EOF
+
+  tags = {
+    Name = "Terraform-Web"
+  }
 }
 
-resource "aws_s3_bucket" "bucket" {
-  bucket = "devops-tf-${random_id.id.hex}"
-}
-
-resource "random_id" "id" {
-  byte_length = 4
+# Output Public IP
+output "public_ip" {
+  value = aws_instance.web.public_ip
 }
