@@ -133,6 +133,10 @@ cat <<HTML > /var/www/html/index.html
     <p>VPC | EC2 | Security Group | Internet Gateway</p>
     <p>Built by Tharun 🚀</p>
     <div class="tag">Deployment Successful</div>
+    <br><br>
+<a href="https://github.com/tharunkumaran05-ship-it/terraform-aws-infrastructure" target="_blank" style="color:white; background:#111827; padding:12px 22px; border-radius:30px; text-decoration:none; font-weight:bold;">
+  View GitHub Repository
+</a>
   </div>
 </body>
 </html>
