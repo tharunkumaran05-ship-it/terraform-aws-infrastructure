@@ -32,3 +32,6 @@ jobs:
 
       - name: Terraform Plan
         run: terraform plan -input=false -lock=false -var="my_ip=0.0.0.0/0"
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var="my_ip=0.0.0.0/0" -lock=false
