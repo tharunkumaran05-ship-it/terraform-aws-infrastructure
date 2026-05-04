@@ -131,6 +131,7 @@ cat <<HTML > /var/www/html/index.html
     <h1>🚀 Terraform + GitHub Actions</h1>
     <p>AWS Infrastructure fully automated using CI/CD</p>
     <p>VPC | EC2 | Security Group | Internet Gateway</p>
+    <p>Built by Tharun 🚀</p>
     <div class="tag">Deployment Successful</div>
   </div>
 </body>
