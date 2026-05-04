@@ -72,19 +72,67 @@ resource "aws_instance" "web" {
   vpc_security_group_ids = [aws_security_group.sg.id]
 
   user_data = <<-EOF
-  #!/bin/bash
-  yum update -y
-  yum install httpd -y
-  systemctl start httpd
-  systemctl enable httpd
+#!/bin/bash
+yum update -y
+yum install httpd -y
+systemctl start httpd
+systemctl enable httpd
 
-  echo "<h1>Deployed via Terraform + GitHub Actions 🚀</h1>" > /var/www/html/index.html
-  EOF
-
-  tags = {
-    Name = "Terraform-Web"
-  }
-}
+cat <<HTML > /var/www/html/index.html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Terraform AWS DevOps Project</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #1f2937, #2563eb);
+      color: white;
+      text-align: center;
+    }
+    .container {
+      margin-top: 120px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.12);
+      padding: 40px;
+      border-radius: 18px;
+      width: 70%;
+      margin: auto;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+    h1 {
+      font-size: 42px;
+      margin-bottom: 10px;
+    }
+    p {
+      font-size: 20px;
+      line-height: 1.6;
+    }
+    .badge {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 22px;
+      background: #22c55e;
+      border-radius: 999px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>🚀 Terraform AWS Infrastructure</h1>
+      <p>Automated cloud infrastructure deployment using Terraform and GitHub Actions CI/CD.</p>
+      <p>Provisioned VPC, Subnet, Internet Gateway, Security Group, and EC2 Web Server.</p>
+      <div class="badge">Deployed Successfully via CI/CD</div>
+    </div>
+  </div>
+</body>
+</html>
+HTML
+EOF
 
 # Output Public IP
 output "public_ip" {
