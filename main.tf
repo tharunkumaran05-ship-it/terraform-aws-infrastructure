@@ -5,11 +5,10 @@ provider "aws" {
 # VPC
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
-}
 
-# Internet Gateway
-resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.main.id
+  tags = {
+    Name = "terraform-vpc"
+  }
 }
 
 # Subnet
@@ -17,18 +16,29 @@ resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
+
+  tags = {
+    Name = "public-subnet"
+  }
+}
+
+# Internet Gateway
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "igw"
+  }
 }
 
 # Route Table
 resource "aws_route_table" "rt" {
   vpc_id = aws_vpc.main.id
-}
 
-# Route
-resource "aws_route" "r" {
-  route_table_id         = aws_route_table.rt.id
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.igw.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
 }
 
 # Route Table Association
@@ -66,9 +76,10 @@ resource "aws_security_group" "sg" {
 
 # EC2 Instance
 resource "aws_instance" "web" {
-  ami           = "ami-0c02fb55956c7d316" # Amazon Linux (us-east-1 safe)
+  ami           = "ami-0c02fb55956c7d316" # Amazon Linux (us-east-1)
   instance_type = "t3.micro"
   subnet_id     = aws_subnet.public.id
+
   vpc_security_group_ids = [aws_security_group.sg.id]
 
   user_data = <<-EOF
@@ -82,59 +93,52 @@ cat <<HTML > /var/www/html/index.html
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Terraform AWS DevOps Project</title>
+  <title>DevOps Project</title>
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #1f2937, #2563eb);
+      font-family: Arial;
+      background: linear-gradient(135deg, #1e3a8a, #0f172a);
       color: white;
       text-align: center;
     }
-    .container {
-      margin-top: 120px;
-    }
     .card {
-      background: rgba(255, 255, 255, 0.12);
+      margin-top: 120px;
+      background: rgba(255,255,255,0.1);
       padding: 40px;
-      border-radius: 18px;
-      width: 70%;
-      margin: auto;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      border-radius: 15px;
+      width: 60%;
+      margin-left: auto;
+      margin-right: auto;
     }
     h1 {
-      font-size: 42px;
-      margin-bottom: 10px;
+      font-size: 40px;
     }
     p {
       font-size: 20px;
-      line-height: 1.6;
     }
-    .badge {
-      display: inline-block;
+    .tag {
       margin-top: 20px;
-      padding: 12px 22px;
       background: #22c55e;
-      border-radius: 999px;
-      font-weight: bold;
+      padding: 10px 20px;
+      border-radius: 50px;
+      display: inline-block;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="card">
-      <h1>🚀 Terraform AWS Infrastructure</h1>
-      <p>Automated cloud infrastructure deployment using Terraform and GitHub Actions CI/CD.</p>
-      <p>Provisioned VPC, Subnet, Internet Gateway, Security Group, and EC2 Web Server.</p>
-      <div class="badge">Deployed Successfully via CI/CD</div>
-    </div>
+  <div class="card">
+    <h1>🚀 Terraform + GitHub Actions</h1>
+    <p>AWS Infrastructure fully automated using CI/CD</p>
+    <p>VPC | EC2 | Security Group | Internet Gateway</p>
+    <div class="tag">Deployment Successful</div>
   </div>
 </body>
 </html>
 HTML
 EOF
 
-# Output Public IP
-output "public_ip" {
-  value = aws_instance.web.public_ip
+  tags = {
+    Name = "terraform-ec2"
+  }
 }
