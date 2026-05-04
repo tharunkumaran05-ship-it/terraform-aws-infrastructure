@@ -57,6 +57,15 @@ resource "aws_instance" "web" {
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.sg.id]
   user_data              = file("user_data.sh")
+  user_data = <<-EOF
+  #!/bin/bash
+  sudo apt update -y
+  sudo apt install apache2 -y
+  sudo systemctl start apache2
+  sudo systemctl enable apache2
+
+  echo "<h1>Deployed via Terraform + GitHub Actions 🚀</h1>" | sudo tee /var/www/html/index.html
+  EOF
 }
 
 resource "aws_s3_bucket" "bucket" {
